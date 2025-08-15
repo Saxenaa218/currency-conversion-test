@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .game-area {
+            margin: 30px 0;
+        }
+        
+        .question {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .option-btn {
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .option-btn.correct {
+            background: #4CAF50;
+            border-color: #45a049;
+        }
+        
+        .option-btn.incorrect {
+            background: #f44336;
+            border-color: #da190b;
+        }
+        
+        .score {
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .next-btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .next-btn:hover {
+            background: #FF5252;
+            transform: scale(1.05);
+        }
+        
+        .next-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .final-score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+        }
+        
+        .restart-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>💰 Currency Quiz</h1>
+        <div class="score">
+            Score: <span id="score">0</span> / <span id="total">0</span>
+        </div>
+        
+        <div id="game-area" class="game-area">
+            <div id="question" class="question"></div>
+            <div id="options" class="options"></div>
+            <button id="next-btn" class="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+        </div>
+        
+        <div id="final-screen" class="final-score" style="display: none;">
+            <h2>🎉 Game Complete!</h2>
+            <div id="final-score-text"></div>
+            <button class="restart-btn" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the currency symbol for Japanese Yen?",
+                options: ["¥", "₩", "₹", "$"],
+                correct: 0
+            },
+            {
+                question: "Which currency is used in the United Kingdom?",
+                options: ["Euro", "Dollar", "Pound Sterling", "Franc"],
+                correct: 2
+            },
+            {
+                question: "What does 'USD' stand for?",
+                options: ["United States Dollar", "Universal Standard Dollar", "United System Dollar", "Union State Dollar"],
+                correct: 0
+            },
+            {
+                question: "Which country uses the Euro as its currency?",
+                options: ["United Kingdom", "Switzerland", "Germany", "Norway"],
+                correct: 2
+            },
+            {
+                question: "What is the currency code for Indian Rupee?",
+                options: ["IND", "INR", "IRP", "IRU"],
+                correct: 1
+            },
+            {
+                question: "Which currency has the symbol '₩'?",
+                options: ["Chinese Yuan", "Japanese Yen", "South Korean Won", "Thai Baht"],
+                correct: 2
+            },
+            {
+                question: "What is the main currency of Canada?",
+                options: ["US Dollar", "Canadian Dollar", "Canadian Pound", "Canadian Euro"],
+                correct: 1
+            },
+            {
+                question: "Which currency is abbreviated as 'CHF'?",
+                options: ["Chinese Franc", "Swiss Franc", "Canadian Franc", "Chilean Franc"],
+                correct: 1
+            },
+            {
+                question: "What symbol represents the British Pound?",
+                options: ["£", "€", "₤", "P"],
+                correct: 0
+            },
+            {
+                question: "Which country's currency is the 'Real'?",
+                options: ["Argentina", "Mexico", "Brazil", "Colombia"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            updateScore();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('next-btn').disabled = true;
+            selectedAnswer = null;
+        }
+
+        function selectAnswer(answerIndex) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = answerIndex;
+            const question = questions[currentQuestion];
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            buttons.forEach((button, index) => {
+                if (index === question.correct) {
+                    button.classList.add('correct');
+                } else if (index === answerIndex && index !== question.correct) {
+                    button.classList.add('incorrect');
+                }
+                button.style.pointerEvents = 'none';
+            });
+            
+            if (answerIndex === question.correct) {
+                score++;
+                updateScore();
+            }
+            
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                showFinalScore();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showFinalScore() {
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = 'Outstanding! You\'re a currency expert! 🏆';
+            } else if (percentage >= 70) {
+                message = 'Great job! You know your currencies well! 🎯';
+            } else if (percentage >= 50) {
+                message = 'Not bad! Keep learning about world currencies! 📚';
+            } else {
+                message = 'Keep practicing! You\'ll get better! 💪';
+            }
+            
+            document.getElementById('final-score-text').innerHTML = `
+                <div>You scored ${score} out of ${questions.length} (${percentage}%)</div>
+                <div style="margin-top: 10px; font-size: 0.9em;">${message}</div>
+            `;
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('total').textContent = questions.length;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // Start the game when page loads
+        startGame();
+    </script>
+</body>
+</html>
